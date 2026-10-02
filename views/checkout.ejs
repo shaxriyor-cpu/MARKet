@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buyurtma berish - TechMarket</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: #f5f5f5; min-height: 100vh; }
+    header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: #2563eb; text-decoration: none; }
+    .cart-btn { background: #2563eb; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .cart-count { background: #ef4444; color: #fff; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    main { max-width: 600px; margin: 0 auto; padding: 2rem; }
+    .checkout-page { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 2rem; }
+    .checkout-header { font-size: 1.5rem; font-weight: 600; color: #1f2937; margin-bottom: 1.5rem; }
+    .order-summary { background: #f9fafb; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; }
+    .order-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; }
+    .order-item:last-child { border-bottom: none; }
+    .order-item-info { display: flex; flex-direction: column; gap: 0.25rem; }
+    .order-item-name { font-weight: 500; color: #1f2937; }
+    .order-item-serial { font-size: 0.75rem; color: #9ca3af; }
+    .order-item-total { font-weight: 600; color: #2563eb; }
+    .order-total { display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-label { display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem; }
+    .form-input { width: 100%; padding: 0.875rem 1rem; border: 1px solid #d1d5db; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s, box-shadow 0.2s; }
+    .form-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    .form-hint { font-size: 0.875rem; color: #6b7280; margin-top: 0.5rem; }
+    .btn { padding: 1rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; font-size: 1rem; width: 100%; text-align: center; }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+    .alert { padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; }
+    .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+    .info-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; color: #1e40af; font-size: 0.875rem; line-height: 1.6; }
+    .admin-link { position: fixed; bottom: 1rem; right: 1rem; width: 40px; height: 40px; border-radius: 50%; background: #1f2937; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0.7; }
+    .admin-link:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">TechMarket</a>
+    <a href="/cart" class="cart-btn">
+      🛒 Savat
+      <% if (cart && cart.length > 0) { %>
+        <span class="cart-count"><%= cart.reduce((a,b) => a + b.qty, 0) %></span>
+      <% } %>
+    </a>
+  </header>
+
+  <main>
+    <div class="checkout-page">
+      <% if (locals.error === 'missing') { %>
+        <div class="alert alert-error">Iltimos, Telegram username kiriting</div>
+      <% } %>
+
+      <h1 class="checkout-header">📋 Buyurtma berish</h1>
+
+      <div class="info-box">
+        <strong>ℹ️ Ma'lumot:</strong> Buyurtma tasdiqlangandan so'ng, sizga chek chiqadi. Sotuvchi siz bilan Telegram orqali bog'lanadi va 5 kun ichida yetkazib beradi.
+      </div>
+
+      <div class="order-summary">
+        <% cart.forEach(item => { %>
+          <div class="order-item">
+            <div class="order-item-info">
+              <span class="order-item-name"><%= item.name %> × <%= item.qty %></span>
+              <span class="order-item-serial">Seriya: <%= item.serial %></span>
+            </div>
+            <span class="order-item-total"><%= formatPrice(item.price * item.qty) %></span>
+          </div>
+        <% }) %>
+        <div class="order-total">
+          <span>Jami to'lov</span>
+          <span><%= formatPrice(total) %></span>
+        </div>
+      </div>
+
+      <form action="/order" method="POST">
+        <div class="form-group">
+          <label for="telegram_username" class="form-label">Telegram username</label>
+          <input type="text" id="telegram_username" name="telegram_username" class="form-input" placeholder="@username" required autocomplete="username">
+          <p class="form-hint">Sotuvchi siz bilan bu username orqali bog'lanadi. Masalan: <code>@john_doe</code></p>
+        </div>
+        <button type="submit" class="btn btn-primary">✅ Buyurtma berish va to'lov</button>
+      </form>
+
+      <p style="text-align:center;margin-top:1.5rem;color:#6b7280;font-size:0.875rem;">
+        <a href="/cart" style="color:#2563eb;">← Savatga qaytish</a>
+      </p>
+    </div>
+  </main>
+
+  <a href="/admin/login" class="admin-link" title="Admin panel">⚙️</a>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - TechMarket</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: #f5f5f5; min-height: 100vh; }
+    header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 1.25rem; font-weight: 700; color: #2563eb; text-decoration: none; }
+    .header-actions { display: flex; gap: 1rem; align-items: center; }
+    .btn { padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; cursor: pointer; border: none; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #fff; color: #2563eb; border: 1px solid #2563eb; }
+    .btn-secondary:hover { background: #eff6ff; }
+    .btn-danger { background: #fff; color: #ef4444; border: 1px solid #ef4444; }
+    .btn-danger:hover { background: #fef2f2; }
+    main { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+    .admin-tabs { display: flex; gap: 0.5rem; margin-bottom: 2rem; background: #fff; padding: 0.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .tab-btn { padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: #6b7280; font-size: 0.875rem; transition: all 0.2s; }
+    .tab-btn.active { background: #2563eb; color: #fff; }
+    .tab-btn:hover:not(.active) { background: #f3f4f6; color: #1f2937; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn 0.2s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .panel-title { font-size: 1.25rem; font-weight: 600; color: #1f2937; }
+    .table-container { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #f3f4f6; }
+    th { background: #f9fafb; font-weight: 600; color: #374151; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { font-size: 0.875rem; color: #1f2937; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f9fafb; }
+    .serial-code { font-family: monospace; background: #f3f4f6; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; }
+    .status-badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; }
+    .status-yangi { background: #dbeafe; color: #1e40af; }
+    .status-jarayonda { background: #fef3c7; color: #92400e; }
+    .status-yetkazildi { background: #dcfce7; color: #166534; }
+    .status-bekor { background: #fee2e2; color: #991b1b; }
+    .form-inline { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .form-inline input, .form-inline select { padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; }
+    .form-inline input[type="text"] { min-width: 150px; }
+    .form-inline input[type="number"] { width: 80px; }
+    .form-inline input[name="description"] { flex: 1; min-width: 200px; }
+    .empty-state { text-align: center; padding: 3rem; color: #6b7280; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+    .modal-overlay.active { display: flex; }
+    .modal { background: #fff; border-radius: 12px; padding: 1.5rem; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal h3 { margin-bottom: 1rem; font-size: 1.125rem; }
+    .modal .form-group { margin-bottom: 1rem; }
+    .modal label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem; }
+    .modal input, .modal select, .modal textarea { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; }
+    .modal-actions { display: flex; gap: 0.5rem; justify-content: flex-end; margin-top: 1.5rem; }
+    @media (max-width: 768px) {
+      table { display: block; overflow-x: auto; }
+      .admin-tabs { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/admin" class="logo">⚙️ Admin Panel</a>
+    <div class="header-actions">
+      <a href="/" class="btn btn-secondary" target="_blank">🌐 Saytni ko'rish</a>
+      <a href="/admin/logout" class="btn btn-danger">🚪 Chiqish</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="admin-tabs">
+      <button class="tab-btn active" data-tab="orders">📦 Buyurtmalar (<%= orders.length %>)</button>
+      <button class="tab-btn" data-tab="products">📦 Tovarlar (<%= products.length %>)</button>
+    </div>
+
+    <div id="orders-panel" class="tab-panel active">
+      <div class="panel-header">
+        <h2 class="panel-title">Barcha buyurtmalar</h2>
+      </div>
+      <div class="table-container">
+        <% if (orders.length === 0) { %>
+          <div class="empty-state">Buyurtmalar yo'q</div>
+        <% } else { %>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Tovar</th>
+                <th>Seriya</th>
+                <th>Narx</th>
+                <th>Telegram</th>
+                <th>Status</th>
+                <th>Sana</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% orders.forEach(order => { %>
+                <tr>
+                  <td><%= order.id %></td>
+                  <td><%= order.product_name %></td>
+                  <td><span class="serial-code"><%= order.product_serial %></span></td>
+                  <td><%= formatPrice(order.product_price) %></td>
+                  <td>@<%= order.telegram_username %></td>
+                  <td>
+                    <form action="/admin/order/update" method="POST" style="display:inline;">
+                      <input type="hidden" name="id" value="<%= order.id %>">
+                      <select name="status" class="status-badge status-<%= order.status %>" onchange="this.form.submit()">
+                        <option value="yangi" <%= order.status === 'yangi' ? 'selected' : '' %>>Yangi</option>
+                        <option value="jarayonda" <%= order.status === 'jarayonda' ? 'selected' : '' %>>Jarayonda</option>
+                        <option value="yetkazildi" <%= order.status === 'yetkazildi' ? 'selected' : '' %>>Yetkazildi</option>
+                        <option value="bekor" <%= order.status === 'bekor' ? 'selected' : '' %>>Bekor</option>
+                      </select>
+                    </form>
+                  </td>
+                  <td><%= new Date(order.created_at).toLocaleString('uz-UZ') %></td>
+                  <td>
+                    <a href="https://t.me/<%= order.telegram_username %>" target="_blank" class="btn btn-primary" style="padding:0.375rem 0.75rem;font-size:0.75rem;">Yozish</a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+    </div>
+
+    <div id="products-panel" class="tab-panel">
+      <div class="panel-header">
+        <h2 class="panel-title">Tovarlar ro'yxati</h2>
+        <button class="btn btn-primary" onclick="openModal('product-modal')">➕ Tovar qo'shish</button>
+      </div>
+      <div class="table-container">
+        <% if (products.length === 0) { %>
+          <div class="empty-state">Tovarlar yo'q</div>
+        <% } else { %>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Seriya raqami</th>
+                <th>Nomi</th>
+                <th>Tavsif</th>
+                <th>Narx</th>
+                <th>Omborda</th>
+                <th>Sana</th>
+                <th>Amallar</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% products.forEach(product => { %>
+                <tr>
+                  <td><%= product.id %></td>
+                  <td><span class="serial-code"><%= product.serial_number %></span></td>
+                  <td><%= product.name %></td>
+                  <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><%= product.description || '-' %></td>
+                  <td><%= formatPrice(product.price) %></td>
+                  <td><%= product.stock %></td>
+                  <td><%= new Date(product.created_at).toLocaleString('uz-UZ') %></td>
+                  <td>
+                    <form action="/admin/product/delete" method="POST" style="display:inline;" onsubmit="return confirm('O\'chirishga ishonchingiz komilmi?')">
+                      <input type="hidden" name="id" value="<%= product.id %>">
+                      <button type="submit" class="btn btn-danger" style="padding:0.375rem 0.75rem;font-size:0.75rem;">🗑️</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <div id="product-modal" class="modal-overlay">
+    <div class="modal">
+      <h3>➕ Yangi tovar qo'shish</h3>
+      <form action="/admin/product/add" method="POST">
+        <div class="form-group">
+          <label>Seriya raqami *</label>
+          <input type="text" name="serial_number" required placeholder="Masalan: KB-007" pattern="[A-Z0-9-]+" title="Faqat katta harflar, raqamlar va chiziq">
+        </div>
+        <div class="form-group">
+          <label>Nomi *</label>
+          <input type="text" name="name" required placeholder="Masalan: Mechanical Keyboard">
+        </div>
+        <div class="form-group">
+          <label>Tavsif</label>
+          <textarea name="description" rows="3" placeholder="Tavsif (ixtiyoriy)"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Narx (so'm) *</label>
+          <input type="number" name="price" required min="0" step="1000" placeholder="Masalan: 450000">
+        </div>
+        <div class="form-group">
+          <label>Omborda *</label>
+          <input type="number" name="stock" required min="0" value="1" placeholder="Masalan: 10">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('product-modal')">Bekor qilish</button>
+          <button type="submit" class="btn btn-primary">Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.tab + '-panel').classList.add('active');
+      });
+    });
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('active');
+      });
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+      }
+    });
+  </script>
+</body>
+</html>

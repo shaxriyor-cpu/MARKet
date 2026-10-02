@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Savat - TechMarket</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: #f5f5f5; min-height: 100vh; }
+    header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: #2563eb; text-decoration: none; }
+    .cart-btn { background: #2563eb; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .cart-count { background: #ef4444; color: #fff; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    main { max-width: 800px; margin: 0 auto; padding: 2rem; }
+    .cart-page { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; }
+    .cart-header { padding: 1.5rem; border-bottom: 1px solid #e5e7eb; font-size: 1.5rem; font-weight: 600; color: #1f2937; }
+    .cart-empty { padding: 4rem 2rem; text-align: center; color: #6b7280; }
+    .cart-empty svg { width: 64px; height: 64px; margin-bottom: 1rem; opacity: 0.5; }
+    .cart-items { padding: 0; }
+    .cart-item { display: grid; grid-template-columns: 80px 1fr auto auto; gap: 1rem; align-items: center; padding: 1.5rem; border-bottom: 1px solid #f3f4f6; }
+    .cart-item-image { width: 80px; height: 80px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+    .cart-item-info h3 { font-size: 1rem; font-weight: 600; color: #1f2937; margin-bottom: 0.25rem; }
+    .cart-item-serial { font-size: 0.75rem; color: #9ca3af; }
+    .cart-item-price { font-size: 1.1rem; font-weight: 600; color: #2563eb; text-align: right; }
+    .cart-item-qty { display: flex; align-items: center; gap: 0.5rem; }
+    .qty-btn { width: 32px; height: 32px; border: 1px solid #d1d5db; background: #fff; border-radius: 6px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+    .qty-btn:hover { background: #f3f4f6; }
+    .qty-input { width: 50px; text-align: center; border: 1px solid #d1d5db; border-radius: 6px; padding: 0.5rem; font-size: 1rem; }
+    .remove-btn { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.875rem; padding: 0.5rem; }
+    .remove-btn:hover { text-decoration: underline; }
+    .cart-summary { padding: 1.5rem; background: #f9fafb; border-top: 1px solid #e5e7eb; }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; color: #4b5563; }
+    .summary-row.total { font-size: 1.25rem; font-weight: 700; color: #1f2937; border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 0.5rem; }
+    .btn { padding: 1rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; font-size: 1rem; width: 100%; text-align: center; }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #fff; color: #2563eb; border: 1px solid #2563eb; }
+    .btn-secondary:hover { background: #eff6ff; }
+    .actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .actions .btn { flex: 1; }
+    .admin-link { position: fixed; bottom: 1rem; right: 1rem; width: 40px; height: 40px; border-radius: 50%; background: #1f2937; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0.7; }
+    .admin-link:hover { opacity: 1; }
+    @media (max-width: 640px) {
+      .cart-item { grid-template-columns: 60px 1fr; grid-template-rows: auto auto auto; }
+      .cart-item-image { grid-row: span 3; }
+      .cart-item-price { grid-column: 2; text-align: left; }
+      .cart-item-qty { grid-column: 2; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">TechMarket</a>
+    <a href="/cart" class="cart-btn">
+      🛒 Savat
+      <% if (cart && cart.length > 0) { %>
+        <span class="cart-count"><%= cart.reduce((a,b) => a + b.qty, 0) %></span>
+      <% } %>
+    </a>
+  </header>
+
+  <main>
+    <div class="cart-page">
+      <div class="cart-header">🛒 Savatingiz</div>
+      
+      <% if (cart.length === 0) { %>
+        <div class="cart-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <h2>Savat bo'sh</h2>
+          <p>Tovarlar qo'shib, buyurtma bering</p>
+          <a href="/" class="btn btn-primary" style="display:inline-block;margin-top:1rem;width:auto;">Xarid qilish</a>
+        </div>
+      <% } else { %>
+        <div class="cart-items">
+          <% cart.forEach(item => { %>
+            <div class="cart-item">
+              <div class="cart-item-image">🖥️</div>
+              <div class="cart-item-info">
+                <h3><%= item.name %></h3>
+                <div class="cart-item-serial">Seriya: <%= item.serial %></div>
+              </div>
+              <div class="cart-item-price"><%= formatPrice(item.price * item.qty) %></div>
+              <div class="cart-item-qty">
+                <form action="/cart/add" method="POST" style="display:inline;">
+                  <input type="hidden" name="serial" value="<%= item.serial %>">
+                  <button type="submit" class="qty-btn" title="Qo'shish">+</button>
+                </form>
+                <span><%= item.qty %></span>
+                <form action="/cart/remove" method="POST" style="display:inline;">
+                  <input type="hidden" name="serial" value="<%= item.serial %>">
+                  <button type="submit" class="qty-btn" title="Kamaytirish">−</button>
+                </form>
+              </div>
+              <form action="/cart/remove" method="POST" style="display:inline;">
+                <input type="hidden" name="serial" value="<%= item.serial %>">
+                <button type="submit" class="remove-btn">🗑️</button>
+              </form>
+            </div>
+          <% }) %>
+        </div>
+        <div class="cart-summary">
+          <div class="summary-row"><span>Mahsulotlar (<%= cart.reduce((a,b) => a + b.qty, 0) %> ta)</span><span><%= formatPrice(total) %></span></div>
+          <div class="summary-row"><span>Yetkazib berish</span><span>Bepul</span></div>
+          <div class="summary-row total"><span>Jami</span><span><%= formatPrice(total) %></span></div>
+          <div class="actions">
+            <a href="/" class="btn btn-secondary">← Yana xarid qilish</a>
+            <a href="/checkout" class="btn btn-primary">Buyurtma berish →</a>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </main>
+
+  <a href="/admin/login" class="admin-link" title="Admin panel">⚙️</a>
+</body>
+</html>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= product.name %> - TechMarket</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: #f5f5f5; min-height: 100vh; }
+    header { background: #fff; border-bottom: 1px solid #e0e0e0; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .logo { font-size: 1.5rem; font-weight: 700; color: #2563eb; text-decoration: none; }
+    .cart-btn { background: #2563eb; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; }
+    .cart-count { background: #ef4444; color: #fff; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    main { max-width: 800px; margin: 0 auto; padding: 2rem; }
+    .product-detail { background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .product-header { display: grid; grid-template-columns: 300px 1fr; gap: 2rem; margin-bottom: 2rem; }
+    .product-image-large { height: 300px; background: #f0f0f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 5rem; }
+    .product-info h1 { font-size: 2rem; color: #1f2937; margin-bottom: 0.5rem; }
+    .product-serial { color: #6b7280; font-size: 0.875rem; margin-bottom: 1rem; }
+    .product-price-large { font-size: 2rem; font-weight: 700; color: #2563eb; margin-bottom: 1.5rem; }
+    .product-desc-large { color: #4b5563; line-height: 1.7; margin-bottom: 2rem; }
+    .btn { padding: 1rem 2rem; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; text-decoration: none; display: inline-block; font-size: 1rem; }
+    .btn-primary { background: #2563eb; color: #fff; width: 100%; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #fff; color: #2563eb; border: 1px solid #2563eb; }
+    .stock-info { padding: 1rem; background: #f0fdf4; border-radius: 8px; color: #166534; margin-bottom: 1rem; }
+    .back-link { display: inline-block; margin-bottom: 1.5rem; color: #2563eb; text-decoration: none; font-weight: 500; }
+    .back-link:hover { text-decoration: underline; }
+    .admin-link { position: fixed; bottom: 1rem; right: 1rem; width: 40px; height: 40px; border-radius: 50%; background: #1f2937; color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0.7; }
+    .admin-link:hover { opacity: 1; }
+    @media (max-width: 640px) {
+      .product-header { grid-template-columns: 1fr; }
+      .product-image-large { height: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">TechMarket</a>
+    <a href="/cart" class="cart-btn">
+      🛒 Savat
+      <% if (cart && cart.length > 0) { %>
+        <span class="cart-count"><%= cart.reduce((a,b) => a + b.qty, 0) %></span>
+      <% } %>
+    </a>
+  </header>
+
+  <main>
+    <a href="/" class="back-link">← Orqaga</a>
+    <article class="product-detail">
+      <div class="product-header">
+        <div class="product-image-large">
+          <% if (product.image_url) { %>
+            <img src="<%= product.image_url %>" alt="<%= product.name %>" style="width:100%;height:100%;object-fit:cover;border-radius:12px;">
+          <% } else { %>
+            🖥️
+          <% } %>
+        </div>
+        <div class="product-info">
+          <h1><%= product.name %></h1>
+          <p class="product-serial">Seriya raqami: <strong><%= product.serial_number %></strong></p>
+          <div class="product-price-large"><%= formatPrice(product.price) %></div>
+          <p class="product-desc-large"><%= product.description || 'Tavsif yo\'q' %></p>
+          <div class="stock-info">📦 Omborda: <%= product.stock %> ta</div>
+          <form action="/cart/add" method="POST">
+            <input type="hidden" name="serial" value="<%= product.serial_number %>">
+            <button type="submit" class="btn btn-primary">🛒 Savatga qo'shish</button>
+          </form>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <a href="/admin/login" class="admin-link" title="Admin panel">⚙️</a>
+</body>
+</html>
